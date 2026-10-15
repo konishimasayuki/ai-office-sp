@@ -3,12 +3,13 @@ import { api } from '../api.js';
 import { useConfirm } from '../components/Confirm.jsx';
 
 export default function Settings({ me, onMeChange, onAuthError }) {
-  const isAdmin = me.role === 'admin';
+  const isSuper = !!me.super;
   const [users, setUsers] = useState([]);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
 
   const load = useCallback(async () => {
+    if (!isSuper) return;
     try {
       const r = await api.users();
       setUsers(r.users);
@@ -16,7 +17,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
       onAuthError(e);
       setErr(e.message);
     }
-  }, [onAuthError]);
+  }, [onAuthError, isSuper]);
 
   useEffect(() => {
     load();
@@ -38,7 +39,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
       <div className="page-head">
         <div>
           <h1>設定</h1>
-          <p className="muted">この会社のユーザーと、自分のアカウントを管理します。</p>
+          <p className="muted">{isSuper ? 'この会社のユーザーと、自分のアカウントを管理します。' : '表示名とパスワードを変更できます。'}</p>
         </div>
       </div>
       {msg && (
@@ -53,7 +54,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
       )}
 
       <div className="cards">
-        {isAdmin && (
+        {isSuper && (
           <AddUser
             onAdded={(u) => {
               setUsers((x) => [...x, u]);
@@ -62,7 +63,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
             onError={fail}
           />
         )}
-        <UserList users={users} me={me} isAdmin={isAdmin} onChanged={load} onFlash={flash} onError={fail} />
+        {isSuper && <UserList users={users} me={me} onChanged={load} onFlash={flash} onError={fail} />}
         <MyAccount me={me} onMeChange={onMeChange} onFlash={flash} onError={fail} />
       </div>
     </section>
@@ -110,7 +111,7 @@ function AddUser({ onAdded, onError }) {
           </select>
         </label>
       </div>
-      <p className="muted small">ログインIDは半角英数字で、ほかの会社とも重ならないものにしてください。管理者は、ユーザーの追加・削除と会社プロフィールの変更ができます。</p>
+      <p className="muted small">ログインIDは半角英数字で、ほかの会社とも重ならないものにしてください。</p>
       <div className="card-foot">
         <button type="submit" className="btn gold" disabled={busy}>
           {busy ? '追加中…' : '追加する'}
@@ -120,7 +121,7 @@ function AddUser({ onAdded, onError }) {
   );
 }
 
-function UserList({ users, me, isAdmin, onChanged, onFlash, onError }) {
+function UserList({ users, me, onChanged, onFlash, onError }) {
   const confirm = useConfirm();
   const del = async (u) => {
     if (!(await confirm(`${u.name}さん（@${u.username}）を削除します。よろしいですか？`, { ok: '削除する', danger: true }))) return;
@@ -158,7 +159,7 @@ function UserList({ users, me, isAdmin, onChanged, onFlash, onError }) {
               <span>@{u.username}</span>
             </div>
             <span className={`role ${u.role}`}>{u.role === 'admin' ? '管理者' : 'メンバー'}</span>
-            {isAdmin && u.id !== me.id && (
+            {u.id !== me.id && (
               <div className="u-actions">
                 <button type="button" className="btn ghost sm" onClick={() => toggleRole(u)}>
                   {u.role === 'admin' ? 'メンバーにする' : '管理者にする'}

@@ -107,11 +107,11 @@ function AddTenant({ onAdded, onError }) {
           <input value={f.name} onChange={set('name')} placeholder="例）株式会社サンプル" />
         </label>
         <label>
-          管理者の表示名
+          担当者の表示名
           <input value={f.adminName} onChange={set('adminName')} placeholder="例）山口" />
         </label>
         <label>
-          管理者のログインID
+          ログインID
           <input value={f.adminUsername} onChange={set('adminUsername')} autoCapitalize="none" autoCorrect="off" placeholder="例）sample-admin" />
         </label>
         <label>
@@ -119,7 +119,7 @@ function AddTenant({ onAdded, onError }) {
           <input type="password" value={f.password} onChange={set('password')} autoComplete="new-password" />
         </label>
       </div>
-      <p className="muted small">追加すると、その会社の管理者アカウントができます。ログイン後に会社プロフィールを入れてもらってください。</p>
+      <p className="muted small">今は1社につき1アカウントで運用します。追加すると、その会社のアカウントができます。ログイン後に会社プロフィールを入れてもらってください。</p>
       <div className="card-foot">
         <button type="submit" className="btn gold" disabled={busy}>
           {busy ? '追加中…' : '追加する'}
@@ -162,9 +162,14 @@ function TenantRow({ t, mine, onSaved, onError }) {
           {stopped && <em className="stop">停止中</em>}
         </b>
         <small className="muted">
-          ユーザー {t.users}名・今月のAI費用 {yen(t.costMonth)}・登録 {String(t.createdAt).slice(0, 10)}
+          今月のAI費用 {yen(t.costMonth)}・登録 {String(t.createdAt).slice(0, 10)}
         </small>
       </div>
+      <ul className="tenant-accounts">
+        {t.accounts.map((u) => (
+          <Account key={u.id} t={t} u={u} onSaved={onSaved} onError={onError} />
+        ))}
+      </ul>
       <div className="tenant-limits">
         <label>
           1案件の上限（円）
@@ -183,6 +188,50 @@ function TenantRow({ t, mine, onSaved, onError }) {
           </button>
         )}
       </div>
+    </li>
+  );
+}
+
+// その会社のアカウント（ログインID）と、パスワードの再発行
+function Account({ t, u, onSaved, onError }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState('');
+  const [busy, setBusy] = useState(false);
+  const reset = async () => {
+    if (!pw) return;
+    setBusy(true);
+    try {
+      await api.updateTenant({ id: t.id, userId: u.id, password: pw });
+      setPw('');
+      setOpen(false);
+      onSaved(`${u.name}さん（@${u.username}）のパスワードを再発行しました`);
+    } catch (e) {
+      onError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <li>
+      <span>
+        {u.name}　<code>@{u.username}</code>
+        {u.super && <em className="me">運営者</em>}
+      </span>
+      {open ? (
+        <span className="pw-reset">
+          <input type="text" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="新しいパスワード" autoCapitalize="none" autoCorrect="off" />
+          <button type="button" className="btn gold sm" disabled={busy || !pw} onClick={reset}>
+            再発行
+          </button>
+          <button type="button" className="btn ghost sm" onClick={() => setOpen(false)}>
+            やめる
+          </button>
+        </span>
+      ) : (
+        <button type="button" className="btn ghost sm" onClick={() => setOpen(true)}>
+          パスワード再発行
+        </button>
+      )}
     </li>
   );
 }

@@ -894,6 +894,41 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* ---------- 運営管理 ---------- */
+.tenant-accounts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.tenant-accounts li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.tenant-accounts em {
+  font-style: normal;
+  font-size: 11px;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #f3ead6;
+  color: var(--gold-d);
+}
+.pw-reset {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pw-reset input {
+  width: 150px;
+}
 .tenant-list {
   list-style: none;
   margin: 0;

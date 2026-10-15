@@ -1,4 +1,20 @@
-import { DEFAULT_LIMITS, USERNAME_RE, body, createTenant, getTenant, key, listTenants, publicUser, redis, saveTenant, send, tkey, withAuth } from './_lib.js';
+import {
+  DEFAULT_LIMITS,
+  USERNAME_RE,
+  body,
+  createTenant,
+  getTenant,
+  hashPassword,
+  key,
+  listTenants,
+  listUsers,
+  publicUser,
+  redis,
+  saveTenant,
+  send,
+  tkey,
+  withAuth,
+} from './_lib.js';
 
 const month = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 7).replace('-', '');
 
@@ -9,12 +25,15 @@ export default withAuth(
     if (req.method === 'GET') {
       const list = await listTenants();
       const m = month();
-      const [counts, costs] = await Promise.all([
-        Promise.all(list.map((t) => r.scard(tkey(t.id, 'users')))),
-        list.length ? r.mget(...list.map((t) => tkey(t.id, 'ai', 'cost', m))) : [],
-      ]);
+      const [members, costs] = await Promise.all([Promise.all(list.map((t) => listUsers(t.id))), list.length ? r.mget(...list.map((t) => tkey(t.id, 'ai', 'cost', m))) : []]);
       return send(res, 200, {
-        tenants: list.map((t, i) => ({ ...t, limits: { ...DEFAULT_LIMITS, ...(t.limits || {}) }, users: counts[i] || 0, costMonth: Math.round(Number(costs[i] || 0)) })),
+        tenants: list.map((t, i) => ({
+          ...t,
+          limits: { ...DEFAULT_LIMITS, ...(t.limits || {}) },
+          users: members[i].length,
+          accounts: members[i].map((u) => ({ id: u.id, username: u.username, name: u.name, super: !!u.super })),
+          costMonth: Math.round(Number(costs[i] || 0)),
+        })),
       });
     }
     if (req.method === 'POST') {
@@ -37,6 +56,13 @@ export default withAuth(
         const n = (v, d) => (Number.isFinite(Number(v)) && Number(v) >= 0 ? Math.round(Number(v)) : d);
         const cur = { ...DEFAULT_LIMITS, ...(t.limits || {}) };
         t.limits = { ...cur, caseYen: n(b.limits.caseYen, cur.caseYen), dayYen: n(b.limits.dayYen, cur.dayYen) };
+      }
+      // パスワードの再発行（その会社のユーザー1人を指定）
+      if (b.userId && b.password) {
+        const u = await r.get(key('user', String(b.userId)));
+        if (!u || u.tenantId !== t.id) return send(res, 404, { error: 'ユーザーが見つかりません' });
+        u.password = hashPassword(b.password);
+        await r.set(key('user', u.id), u);
       }
       await saveTenant(t);
       return send(res, 200, { tenant: t });
