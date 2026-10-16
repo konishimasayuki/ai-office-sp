@@ -1,5 +1,5 @@
-// AIオフィス マカセル：オフラインでも画面の枠が開けるようにする最小限のService Worker
-const CACHE = 'makaseru-shell-v1';
+// AIオフィス マカセル：画面の枠のキャッシュと、プッシュ通知の受け取り
+const CACHE = 'makaseru-shell-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/apple-touch-icon.png', '/favicon.ico'];
 
 self.addEventListener('install', (e) => {
@@ -56,4 +56,40 @@ self.addEventListener('fetch', (e) => {
       ),
     );
   }
+});
+
+// プッシュ通知を表示する
+self.addEventListener('push', (e) => {
+  let d = {};
+  try {
+    d = e.data ? e.data.json() : {};
+  } catch {
+    d = { title: 'マカセル', body: e.data ? e.data.text() : '' };
+  }
+  e.waitUntil(
+    self.registration.showNotification(d.title || 'マカセル', {
+      body: d.body || '',
+      tag: d.tag || undefined,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: d.url || '/#/ai' },
+    }),
+  );
+});
+
+// 通知を押したら、開いている画面を前に出して該当のタブへ移る
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url || '/#/ai';
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (new URL(c.url).origin === location.origin) {
+          c.navigate(url).catch(() => {});
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
 });

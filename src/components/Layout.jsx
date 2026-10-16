@@ -9,6 +9,13 @@ const ICONS = {
       <circle cx="12" cy="4" r="1.2" />
     </svg>
   ),
+  staff: (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="8" cy="8" r="3" />
+      <circle cx="16.5" cy="9" r="2.5" />
+      <path d="M2.5 19c.6-3 2.8-5 5.5-5s4.9 2 5.5 5M13.5 14.6c.9-.7 1.9-1.1 3-1.1 2.3 0 4 1.7 4.5 4.5" />
+    </svg>
+  ),
   profile: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M4 21V5l8-2v18M12 8h8v13M4 21h16" />

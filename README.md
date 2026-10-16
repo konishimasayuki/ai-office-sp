@@ -19,6 +19,16 @@ React 18 + Vite 5（Biome）、Vercel API Routes、Upstash Redis、Claude API（
 - 運営者（z）は「運営管理」から会社の追加・費用の上限・利用停止ができる
 - 各社の管理者は「会社プロフィール」に事業・商品・料金・連絡先などを入れる。AIはこれを会社の前提として読む
 
+## 主な機能
+
+- 秘書チャット：一言の指示を案件とタスクにまとめ、部署AIへ振り分ける
+- 社内会議：方針・価格・予算を決める必要があるときや、会議を頼まれたときに、AI同士が4段階（案を出す→反論→修正案→まとめ）で話し合い議事録を残す。会議室タブで読める
+- 判断依頼：会議で決めきれないことは、2〜3案を承認箱に出して人間に選んでもらう。決まるまで後のタスクは止まる
+- 承認箱：外に出す成果物は必ず人間が承認する
+- プッシュ通知：承認依頼・判断依頼・完了報告・停止・費用8割をスマホに通知（設定画面でオン。iPhoneはホーム画面に追加して使う。鍵は初回に自動作成）
+- AI社員の設定：会社ごとに名前・口調・使う/使わないを変えられる（秘書とリスクは必須）
+- 成果物の保存：PDF（印刷画面から）・Word（.doc）・Markdown・HTML
+
 ## 表記の変更
 
 製品名・看板などは `src/brand.js` だけで管理する（index.html と manifest もビルド時にここから作る）。
@@ -34,3 +44,8 @@ React 18 + Vite 5（Biome）、Vercel API Routes、Upstash Redis、Claude API（
 | api/tenants.js | 運営管理（会社の一覧・追加・上限・停止） |
 | src/pages/AiStaff.jsx | オフィス・秘書チャット・案件ボード・承認箱・成果物 |
 | src/ai/Office.jsx | オフィスのイラスト |
+| src/ai/save.js | 成果物の保存（PDF・Word・Markdown・HTML） |
+| api/staff.js | AI社員の設定 |
+| api/push.js・api/_push.js | プッシュ通知 |
+| src/pages/Staff.jsx | AI社員の設定画面 |
+| src/components/PushCard.jsx | 通知のオン・オフ |

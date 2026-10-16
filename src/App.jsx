@@ -8,15 +8,16 @@ import AiStaff from './pages/AiStaff.jsx';
 import Login from './pages/Login.jsx';
 import Profile from './pages/Profile.jsx';
 import Settings from './pages/Settings.jsx';
+import Staff from './pages/Staff.jsx';
 import Tenants from './pages/Tenants.jsx';
 
 // 権限によって出すメニューを変える
 function pagesFor(user) {
-  const p = { ai: 'AIオフィス', profile: '会社プロフィール', settings: '設定' };
+  const p = { ai: 'AIオフィス', staff: 'AI社員の設定', profile: '会社プロフィール', settings: '設定' };
   if (user?.super) p.tenants = '運営管理';
   return p;
 }
-const pageFromHash = () => window.location.hash.replace('#/', '') || 'ai';
+const pageFromHash = () => window.location.hash.replace('#/', '').split('?')[0] || 'ai';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -62,6 +63,7 @@ export default function App() {
     <ConfirmProvider>
       <Layout user={user} page={page} pages={pages} onNavigate={go} onLogout={logout}>
         {page === 'ai' && <AiStaff me={user} onAuthError={onAuthError} onGo={go} />}
+        {page === 'staff' && <Staff me={user} onAuthError={onAuthError} />}
         {page === 'profile' && <Profile me={user} onAuthError={onAuthError} />}
         {page === 'settings' && <Settings me={user} onMeChange={setUser} onAuthError={onAuthError} />}
         {page === 'tenants' && <Tenants me={user} onAuthError={onAuthError} />}

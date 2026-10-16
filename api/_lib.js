@@ -102,6 +102,11 @@ export async function saveProfile(tid, p) {
   await redis().set(tkey(tid, 'profile'), p);
 }
 
+// AI社員の設定（会社ごとの名前・口調・使う/使わない）
+export async function loadStaff(tid) {
+  return (await redis().get(tkey(tid, 'staff'))) || {};
+}
+
 // ---------- ユーザー ----------
 export async function listUsers(tid) {
   const ids = (await redis().smembers(tkey(tid, 'users'))).map(String);

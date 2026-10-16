@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useConfirm } from '../components/Confirm.jsx';
+import PushCard from '../components/PushCard.jsx';
 
 export default function Settings({ me, onMeChange, onAuthError }) {
   const isSuper = !!me.super;
@@ -39,7 +40,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
       <div className="page-head">
         <div>
           <h1>設定</h1>
-          <p className="muted">{isSuper ? 'この会社のユーザーと、自分のアカウントを管理します。' : '表示名とパスワードを変更できます。'}</p>
+          <p className="muted">{isSuper ? 'この会社のユーザーと、自分のアカウントを管理します。' : '通知と、表示名・パスワードを設定できます。'}</p>
         </div>
       </div>
       {msg && (
@@ -54,6 +55,7 @@ export default function Settings({ me, onMeChange, onAuthError }) {
       )}
 
       <div className="cards">
+        <PushCard onFlash={flash} onError={fail} />
         {isSuper && (
           <AddUser
             onAdded={(u) => {

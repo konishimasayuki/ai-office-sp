@@ -1,4 +1,4 @@
-// 画面側で使うAI社員の見た目（名前・部署・色）
+// 画面側で使うAI社員の見た目（色・アイコン文字）。名前は会社ごとの設定で上書きされる
 export const AGENT_LOOK = {
   sato: { name: '佐藤', dept: '秘書', color: '#C9A45C', icon: '秘' },
   takahashi: { name: '高橋', dept: '企画', color: '#4F8EF7', icon: '企' },
@@ -13,5 +13,14 @@ export const AGENT_LOOK = {
   matsumoto: { name: '松本', dept: '総務・法務', color: '#5A6B8C', icon: '総' },
   inoue: { name: '井上', dept: '開発', color: '#7A8CA8', icon: '開' },
 };
-export const look = (id) => AGENT_LOOK[id] || { name: id, dept: '', color: '#9AA0AA', icon: '?' };
+
+// 会社ごとの名前（オフィスを読み込んだときにサーバーの値で上書きする）
+let NAMES = {};
+export function setStaffNames(list) {
+  NAMES = Object.fromEntries((list || []).map((a) => [a.id, a.name]));
+}
+export const look = (id) => {
+  const a = AGENT_LOOK[id] || { name: id, dept: '', color: '#9AA0AA', icon: '?' };
+  return NAMES[id] ? { ...a, name: NAMES[id] } : a;
+};
 export const STATE_LABEL = { working: '作業中', assigned: 'タスクあり', idle: '待機中', future: '準備中' };
